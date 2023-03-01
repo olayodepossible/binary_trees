@@ -1,53 +1,72 @@
 #include "binary_trees.h"
 
 /**
- * tree_size - measures the sum of heights of a binary tree
- * @tree: pointer to the root node of the tree to measure the height
+ * _realloc - Reallocates a memory block
+ * @ptr: The pointer to the previous memory block
+ * @old_size: The size of the old memory block
+ * @new_size: The size of the new memory block
  *
- * Return: Height or 0 if tree is NULL
+ * Return: The pointer to the new memory block otherwise NULL
  */
-size_t tree_size(const binary_tree_t *tree)
+void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size)
 {
-	size_t height_l = 0;
-	size_t height_r = 0;
+	void *new_ptr;
+	unsigned int min_size = old_size < new_size ? old_size : new_size;
+	unsigned int i;
 
-	if (!tree)
-		return (0);
-
-	if (tree->left)
-		height_l = 1 + tree_size(tree->left);
-
-	if (tree->right)
-		height_r = 1 + tree_size(tree->right);
-
-	return (height_l + height_r);
+	if (new_size == old_size)
+		return (ptr);
+	if (ptr != NULL)
+	{
+		if (new_size == 0)
+		{
+			free(ptr);
+			return (NULL);
+		}
+		new_ptr = malloc(new_size);
+		if (new_ptr != NULL)
+		{
+			for (i = 0; i < min_size; i++)
+				*((char *)new_ptr + i) = *((char *)ptr + i);
+			free(ptr);
+			return (new_ptr);
+		}
+		free(ptr);
+		return (NULL);
+	}
+	else
+	{
+		new_ptr = malloc(new_size);
+		return (new_ptr);
+	}
 }
 
 /**
- * heap_to_sorted_array - converts a Binary Max Heap
- * to a sorted array of integers
+ * heap_to_sorted_array - Creates a sorted array from a max binary heap tree.
+ * @heap: A pointer to the max binary heap.
+ * @size: A pointer to the resulting array's size value.
  *
- * @heap: pointer to the root node of the heap to convert
- * @size: address to store the size of the array
- *
- * Return: pointer to array sorted in descending order
- **/
+ * Return: A pointer to the array, otherwise NULL.
+ */
 int *heap_to_sorted_array(heap_t *heap, size_t *size)
 {
-	int i, *a = NULL;
+	int *array = NULL;
+	heap_t *root;
+	int val;
+	size_t n = 0;
 
-	if (!heap || !size)
-		return (NULL);
-
-	*size = tree_size(heap) + 1;
-
-	a = malloc(sizeof(int) * (*size));
-
-	if (!a)
-		return (NULL);
-
-	for (i = 0; heap; i++)
-		a[i] = heap_extract(&heap);
-
-	return (a);
+	if (heap != NULL)
+	{
+		root = heap;
+		while (root != NULL)
+		{
+			val = heap_extract(&root);
+			array = _realloc(array, sizeof(int) * n, sizeof(int) * (n + 1));
+			*(array + n) = val;
+			n++;
+		}
+	}
+	if (size != NULL)
+		*size = n;
+	return (array);
 }
